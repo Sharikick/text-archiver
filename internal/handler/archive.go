@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"tsyden.com/archive/internal/model"
 	"tsyden.com/archive/internal/util"
@@ -16,20 +14,39 @@ var archiveCmd = &cobra.Command{
     Args: cobra.ExactArgs(1),
     Run: func(cmd *cobra.Command, args []string) {
         data := util.ReadFile(args[0])
-        println(string(data)) 
-
-        heap := model.PriorityQueue{}
-
-        heap.Add(&model.Node{
-            Freq: 10,
-            Char: 's',
-        })
-
-        fmt.Println(heap)
+        frequencies := calculateFrequencies(string(data))        
+        tree := buildHuffmanTree(frequencies)
     },
 }
 
+func calculateFrequencies(text string) map[rune]int {
+    frequencies := make(map[rune]int)
+    for _, char := range text {
+        frequencies[char]++
+    }
+    return frequencies
+}
 
+func buildHuffmanTree(frequencies map[rune]int) *model.Node {
+    heap := make(model.PriorityQueue, 0, len(frequencies))
+    
+    for char, freq := range frequencies {
+        heap.Add(&model.Node{Char: char, Freq: freq})
+    }
+
+    for heap.Len() > 1 {
+        left := heap.Pop()
+        right := heap.Pop()
+        node := &model.Node{
+            Freq:  left.Freq + right.Freq,
+            Right: right,
+            Left:  left,
+        }
+        heap.Add(node)
+    }
+
+    return heap.Pop()
+}
 
 func init() {
     archiveCmd.Flags().StringVarP(&output, "output", "o", ".", "Output path for the created file")
