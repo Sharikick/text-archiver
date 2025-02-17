@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 )
@@ -17,6 +18,10 @@ func (heap PriorityQueue) Len() int {
     return len(heap)
 }
 
+func (heap PriorityQueue) Less(i, j int) bool {
+    return heap[i].Freq > heap[j].Freq
+}
+
 func (heap PriorityQueue) Swap(i, j int) {
     heap[i], heap[j] = heap[j], heap[i]
 }
@@ -24,7 +29,7 @@ func (heap PriorityQueue) Swap(i, j int) {
 func (heap *PriorityQueue) siftUp(index int) {
     parent := (index - 1) / 2
     for parent >= 0 {
-        if ((*heap)[index].Freq > (*heap)[parent].Freq) {
+        if heap.Less(parent, index) {
             heap.Swap(index, parent)
         } else {
             break
@@ -39,12 +44,12 @@ func (heap *PriorityQueue) siftDown(index int) {
     left := 2*index+1
     right := 2*index+2
     heapLen := heap.Len()
-    for left <= heapLen {
+    for left < heapLen {
         swap := left
-        if right <= heapLen && (*heap)[swap].Freq > (*heap)[right].Freq {
+        if right < heapLen && heap.Less(swap, right) {
             swap = right
         }
-        if (*heap)[index].Freq > (*heap)[swap].Freq {
+        if heap.Less(index, swap) {
 			heap.Swap(index, swap)
 			index = swap
 		} else {
@@ -53,6 +58,11 @@ func (heap *PriorityQueue) siftDown(index int) {
     }
 }
 
+func (heap PriorityQueue) Print() {
+    for _, node := range heap {
+        fmt.Println(*node)
+    }
+}
 
 func (heap *PriorityQueue) Add(node *Node) {
 	*heap = append(*heap, node)
